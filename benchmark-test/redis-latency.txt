@@ -1,1 +1,0 @@
-min: 0, max: 1, avg: 0.08 (6679 samples)
