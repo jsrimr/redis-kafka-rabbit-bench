@@ -16,7 +16,7 @@ def pub(myredis,n_seconds):
         if datetime.datetime.now() > start + datetime.timedelta(seconds=n_seconds):
             break
         cnt+=1
-    print(f"published {cnt / n_seconds} msgs")
+    print(f"pub throughput {cnt / n_seconds} msgs")
 
 def sub(myredis, name,n_seconds):
     pubsub = myredis.pubsub()
@@ -26,6 +26,7 @@ def sub(myredis, name,n_seconds):
     cnt = 0
 
     for _ in pubsub.listen():
+        print("sub started")
         cnt+=1
         if datetime.datetime.now() > start + datetime.timedelta(seconds=n_seconds):
             break

@@ -1,0 +1,2 @@
+ [*] Waiting for messages. To exit press CTRL+C
+Latency Average for 1000: 0.040865678071975706

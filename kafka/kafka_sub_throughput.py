@@ -1,11 +1,14 @@
+import os
+from os.path import dirname
 import sys
+sys.path.append((dirname(sys.path[0])))
+from arguments import argparser
 import time
 from kafka import KafkaProducer, KafkaConsumer
 import datetime
 from multiprocessing import Process
-import sys
 
-def pub(seconds = 10):
+def pub(seconds):
     producer = KafkaProducer()
     key = bytes('key', encoding='utf-8')
     start = datetime.datetime.now()
@@ -18,8 +21,8 @@ def pub(seconds = 10):
             break
     print(f"publisher throughput {cnt / seconds}")
 
-def sub(seconds, name):
-    consumer = KafkaConsumer('test', consumer_timeout_ms=15000)
+def sub(seconds, ):
+    consumer = KafkaConsumer('test')
 
     start = datetime.datetime.now()
     cnt = 0
@@ -33,11 +36,11 @@ def sub(seconds, name):
 
 if __name__ == '__main__':
     # timer()
-
-    sub = Process(target=sub, kwargs={'seconds': 10, 'name': 'reader1'})
+    args = argparser()
+    sub = Process(target=sub, kwargs={'seconds': args.n_seconds,})
     sub.start()
 
-    pub = Process(target=pub , args=[10, ])
+    pub = Process(target=pub , args=[args.n_seconds, ])
     pub.start()
 
     procs = [sub,pub]

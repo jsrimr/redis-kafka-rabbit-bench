@@ -6,9 +6,9 @@ from arguments import argparser
 import time
 import pika
 import multiprocessing
-from multiprocessing import Process, Queue
+from multiprocessing import Process #, Queue
 
-def sub(n_msg=1000, output=None):
+def sub(n_msg=1000, ):
     latency_list = []
     Append = latency_list.append
     cnt = 0
@@ -27,11 +27,12 @@ def sub(n_msg=1000, output=None):
     channel.queue_declare(queue='hello')  # queue 생성
     channel.basic_consume(queue='hello', auto_ack=True,
                           on_message_callback=callback)
-    print(' [*] Waiting for messages. To exit press CTRL+C')
+    # print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
     channel.close()
     connection.close()
-    output.put(sum(latency_list) / len(latency_list))
+    print(f'Latency Average for {n_msg}: {sum(latency_list) / len(latency_list)}')
+    # output.put(sum(latency_list) / len(latency_list))
 
 def pub(n_msg):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
@@ -49,18 +50,17 @@ def pub(n_msg):
 if __name__ == '__main__':
     args = argparser()
 
-    output = Queue()
+    # output = Queue()
 
-    sub_proc = Process(target=sub, args = [args.n_msg, output])
+    sub_proc = Process(target=sub, args = [args.n_msg])
     sub_proc.start()
 
     pub_proc = Process(target=pub, args = [args.n_msg])
     pub_proc.start()
 
-    # avg_latency = sub_proc.result()
     procs = [sub_proc, pub_proc]
     for proc in procs:
         proc.join()
-    print(output.get())
-    output.close()
+    # print(output.get())
+    # output.close()
     

@@ -1,0 +1,1 @@
+Latency Average for 1000: 7.306753813444793e-05

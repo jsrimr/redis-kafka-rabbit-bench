@@ -1,0 +1,3 @@
+ [*] Waiting for messages. To exit press CTRL+C
+sub throughput 10571.8
+pub throughput 10571.6 msgs

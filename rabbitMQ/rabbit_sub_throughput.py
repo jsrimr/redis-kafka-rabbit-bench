@@ -24,7 +24,7 @@ def pub(n_sec, topic):
         if datetime.datetime.now() > start + datetime.timedelta(seconds=n_sec):
             break
         cnt += 1
-    print(f"published {cnt / n_sec} msgs")
+    print(f"pub throughput {cnt / n_sec} msgs")
 
 def sub(n_sec, topic):
 
@@ -41,7 +41,7 @@ def sub(n_sec, topic):
     channel = connection.channel()
     channel.queue_declare(queue=topic)  # queue 생성
     channel.basic_consume(queue=topic, auto_ack=True, on_message_callback=callback)
-    print(' [*] Waiting for messages. To exit press CTRL+C')
+    # print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
 
     print(f"sub throughput {sub_cnt / n_sec}")

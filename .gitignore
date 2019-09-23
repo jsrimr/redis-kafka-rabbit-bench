@@ -1,4 +1,6 @@
 .idea
 .ipynb_checkpoints
-.code
+.vscode
+__pycache__
 concurrent/
+redis-python-simple-tutorial/

@@ -11,7 +11,7 @@ import time
 def pub(myredis, n_msg):
     for n in range(n_msg):
         myredis.publish('channel', time.time())
-    print("published")
+    # print("published")
 
 
 def sub(myredis, name, n_msg):
@@ -28,7 +28,6 @@ def sub(myredis, name, n_msg):
             cnt+=1
             continue 
         latency = time.time() - float(item['data'])
-        print(latency)
         Append(latency)
         cnt += 1
         if cnt == n_msg:

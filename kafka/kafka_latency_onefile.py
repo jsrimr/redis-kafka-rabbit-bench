@@ -16,11 +16,11 @@ def pub(n_msg):
     for n in range(n_msg):
         producer.send("test", value=value, key=key)
 
-    print("published")
+    # print("published")
 
 
 def sub(n_msg,consumer):
-    print("sub started")
+    # print("sub started")
     latency_list = []
     Append = latency_list.append
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     proc1.start()
     time.sleep(2) # 약간의 딜레이가 있어야 작동함
 
-    proc2 = Process(target=pub, kwargs={"n_msg": args.n_msg})
+    proc2 = Process(target=pub, kwargs={"n_msg": 2*args.n_msg})
     proc2.start()
 
     procs = [proc1, proc2]
