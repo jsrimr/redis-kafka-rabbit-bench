@@ -1,3 +1,8 @@
+import os
+from os.path import dirname
+import sys
+sys.path.append((dirname(sys.path[0])))
+from arguments import argparser
 import time
 import datetime
 from kafka import KafkaProducer
@@ -18,5 +23,6 @@ def pub():
 
 
 if __name__ == '__main__':
+    args = argparser()
     pub()
     # pub_with_pipe(myredis)
