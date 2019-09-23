@@ -1,0 +1,1 @@
+publisher throughput 23039.5
