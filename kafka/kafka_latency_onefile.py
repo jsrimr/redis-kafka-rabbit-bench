@@ -1,9 +1,12 @@
+import os
+from os.path import dirname
+import sys
+sys.path.append((dirname(sys.path[0])))
+from arguments import argparser
 import time
 from kafka import KafkaConsumer, KafkaProducer
 from multiprocessing import Process
-
 # from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import Process
 
 
 def pub(n_msg):
@@ -16,33 +19,29 @@ def pub(n_msg):
     print("published")
 
 
-def sub(name):
+def sub(n_msg,consumer):
     print("sub started")
-    consumer = KafkaConsumer('test', consumer_timeout_ms=5000)
     latency_list = []
     Append = latency_list.append
 
+    cnt = 0
     for msg in consumer:
-        # print(f"Reader {name} arrived time {time.time()} and departure time {msg.timestamp}")
-        # print("msg arrived")
-        try:
-            latency = time.time() - float(msg.value)
-            print(latency)
-            Append(latency)
-        except:
-            print(msg.value)
-
+        latency = time.time() - float(msg.value)
+        # print(latency , cnt)
+        Append(latency)
+        cnt+=1
+        if cnt == n_msg:
+            break
     print("latency average:", sum(latency_list) / len(latency_list))
 
-
 if __name__ == '__main__':
-
-
-    proc1 = Process(target=sub, kwargs={'name': 'reader1'})
+    args = argparser()
+    consumer = KafkaConsumer('test', )
+    proc1 = Process(target=sub, kwargs={'n_msg': args.n_msg, "consumer": consumer})
     proc1.start()
+    time.sleep(2) # 약간의 딜레이가 있어야 작동함
 
-    time.sleep(2)
-    proc2 = Process(target=pub, kwargs={"n_msg":100})
+    proc2 = Process(target=pub, kwargs={"n_msg": args.n_msg})
     proc2.start()
 
     procs = [proc1, proc2]
