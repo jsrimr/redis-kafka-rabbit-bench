@@ -10,6 +10,9 @@ def argparser():
     parser.add_argument('--n_seconds', type=int, default=10,
                         help='how much time to run throughput')
 
+    parser.add_argument('--n_threads', type=int, default=100,
+                        help='how many pub/sub to run')
+
 
     args = parser.parse_args()
     return args

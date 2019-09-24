@@ -9,32 +9,34 @@ import pika
 from multiprocessing import Process
 
 def pub(n_sec, topic):
-    start = datetime.datetime.now()
+    start = time.time_ns()
     cnt = 0
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
     channel.queue_declare(queue=topic)  # queue 생성
-
+    n_ns = n_sec * 1000000000
+    
     def pub_():
         channel.basic_publish(exchange='', routing_key=topic, body=str(time.time()),
                               properties=pika.BasicProperties(timestamp=int(time.time())))
 
     while True:
         pub_()
-        if datetime.datetime.now() > start + datetime.timedelta(seconds=n_sec):
+        if time.time_ns() > start + n_ns:
             break
         cnt += 1
     print(f"pub throughput {cnt / n_sec} msgs")
 
 def sub(n_sec, topic):
 
-    start = datetime.datetime.now()
+    start = time.time_ns()
     sub_cnt = 0
+    n_ns = n_sec * 1000000000
 
     def callback(ch, method, properties, body):
         nonlocal sub_cnt
         sub_cnt += 1
-        if datetime.datetime.now() > start + datetime.timedelta(seconds=n_sec):
+        if time.time_ns() > start + n_ns:
             channel.stop_consuming()
 
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))

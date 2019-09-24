@@ -7,7 +7,7 @@ import time
 import datetime
 import redis
 
-def pub(myredis, seconds):
+def pub(myredis, n_seconds):
     start = datetime.datetime.now()
     cnt = 0
     while True:
