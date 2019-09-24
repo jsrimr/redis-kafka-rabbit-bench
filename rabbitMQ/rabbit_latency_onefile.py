@@ -16,7 +16,7 @@ def sub(n_msg=1000, ):
     def callback(ch, method, properties, body):
         nonlocal cnt
         cnt += 1
-        latency = time.time() - float(body)
+        latency = time.time_ns() - float(body)
         Append(latency)
         if cnt == n_msg:
             channel.stop_consuming()
@@ -39,8 +39,8 @@ def pub(n_msg):
     channel = connection.channel()
     channel.queue_declare(queue='hello')  #queue 생성
     def pubish():
-        channel.basic_publish(exchange='',routing_key='hello',body=str(time.time()), \
-                                properties=pika.BasicProperties(timestamp=int(time.time())))
+        channel.basic_publish(exchange='',routing_key='hello',body=str(time.time_ns()), \
+                                properties=pika.BasicProperties(timestamp=int(time.time_ns())))
         # print(" [x] Sent 'Hello World!'")
     for _ in range(args.n_msg):
         pubish()
