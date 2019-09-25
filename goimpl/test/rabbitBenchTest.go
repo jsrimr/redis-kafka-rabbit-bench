@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/streadway/amqp"
 )
 
 type counter struct {
@@ -35,8 +35,8 @@ func TestBuff(t *testing.T) {
 	log.Println(sum)
 }
 
-func TestRedisBenchWithWaitGroup(t *testing.T) {
-	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+func TestRabbitBenchWithWaitGroup(t *testing.T) {
+	client := Rabbit.NewClient(&Rabbit.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
 	cnt := counter{i: 0}
 
@@ -77,8 +77,8 @@ func TestRedisBenchWithWaitGroup(t *testing.T) {
 	sub.Close()
 }
 
-func TestRedisPubSubThroughputWithBufferedChannel(t *testing.T) {
-	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+func TestRabbitPubSubThroughputWithBufferedChannel(t *testing.T) {
+	client := Rabbit.NewClient(&Rabbit.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
 	nSec := 10
 	cc := 5
@@ -88,8 +88,8 @@ func TestRedisPubSubThroughputWithBufferedChannel(t *testing.T) {
 
 	since := time.Now()
 	due := time.Second * time.Duration(nSec)
-	log.Println("start benchmark for redis")
-	go func(sub *redis.PubSub) {
+	log.Println("start benchmark for Rabbit")
+	go func(sub *Rabbit.PubSub) {
 		defer func() {
 			sub.Close()
 		}()
@@ -132,8 +132,8 @@ func TestRedisPubSubThroughputWithBufferedChannel(t *testing.T) {
 	<-done
 }
 
-func TestRedisPubSubLatemncyWithBufferedChannel(t *testing.T) {
-	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+func TestRabbitPubSubLatemncyWithBufferedChannel(t *testing.T) {
+	client := Rabbit.NewClient(&Rabbit.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
 	nSec := 10
 	cc := 2
@@ -143,8 +143,8 @@ func TestRedisPubSubLatemncyWithBufferedChannel(t *testing.T) {
 
 	since := time.Now()
 	due := time.Second * time.Duration(nSec)
-	log.Println("start benchmark for redis")
-	go func(sub *redis.PubSub) {
+	log.Println("start benchmark for Rabbit")
+	go func(sub *Rabbit.PubSub) {
 		defer func() {
 			sub.Close()
 		}()
@@ -190,8 +190,8 @@ func TestRedisPubSubLatemncyWithBufferedChannel(t *testing.T) {
 	<-done
 }
 
-func TestRedisSet(t *testing.T) {
-	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+func TestRabbitSet(t *testing.T) {
+	client := Rabbit.NewClient(&Rabbit.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
 	nSec := 10
 	cc := 5
@@ -199,7 +199,7 @@ func TestRedisSet(t *testing.T) {
 
 	since := time.Now()
 	due := time.Second * time.Duration(nSec)
-	log.Println("start benchmark for redis")
+	log.Println("start benchmark for Rabbit")
 	log.Println("ready for set")
 	for i := 0; i < cc; i++ {
 		go func() {
