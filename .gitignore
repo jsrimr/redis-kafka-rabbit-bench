@@ -4,3 +4,4 @@
 __pycache__
 concurrent/
 redis-python-simple-tutorial/
+*.sum
