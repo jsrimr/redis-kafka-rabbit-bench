@@ -188,6 +188,72 @@ func TestRedisPubSubThroughputWithMutliConnection(t *testing.T) {
 	log.Println("publish throughput", sum/nSec, "msg/sec")
 	<-done
 }
+
+func TestRedisPubSubThroughputPipelined(t *testing.T) {
+	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+	defer client.Close()
+	nSec := 1
+	cc := 100
+	pc := 10
+	cn := make(chan int, cc)
+	done := make(chan bool)
+	sub := client.Subscribe("channel")
+
+	since := time.Now()
+	due := time.Second * time.Duration(nSec)
+	log.Println("start benchmark for redis (multiple client + pipelined)")
+	go func(sub *redis.PubSub) {
+		defer func() {
+			sub.Close()
+		}()
+		cnt := 0
+		log.Println("ready for subscribe")
+		for {
+			sub.ReceiveMessage()
+			cnt++
+			nowSince := time.Since(since)
+			if nowSince > due {
+				break
+			}
+		}
+		log.Println("subscribe throughput", cnt/nSec, "msg/sec")
+		done <- true
+	}(sub)
+	log.Println("ready for publish")
+	for i := 0; i < cc; i++ {
+		client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+		defer client.Close()
+		go func(client *redis.Client) {
+			cnt := 0
+			defer func() {
+				cn <- cnt
+			}()
+			for {
+				pipe := client.Pipeline()
+				for j:=0; j<pc; j++ {
+					pipe.Publish("channel", strconv.FormatInt(time.Now().UnixNano(), 10))
+				}
+				_, err := pipe.Exec()
+				if err != nil {
+					t.Error(err)
+				}
+				cnt+=pc
+				nowSince := time.Since(since)
+				if nowSince > due {
+					break
+				}
+			}
+		}(client)
+	}
+	sum := 0
+	for i := 0; i < cc; i++ {
+		sum += <-cn
+	}
+	close(cn)
+	log.Println("publish throughput", sum/nSec, "msg/sec")
+	<-done
+}
+
 func TestRedisPubSubLatencyWithBufferedChannel(t *testing.T) {
 	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
