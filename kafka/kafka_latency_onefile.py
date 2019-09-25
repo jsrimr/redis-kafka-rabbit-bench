@@ -12,7 +12,7 @@ from multiprocessing import Process
 def pub(n_msg):
     producer = KafkaProducer()
     key = bytes('key', encoding='utf-8')
-    value = bytes(str(time.time()), encoding='utf-8')
+    value = bytes(str(time.time_ns()), encoding='utf-8')
     for n in range(n_msg):
         producer.send("test", value=value, key=key)
 
@@ -26,13 +26,13 @@ def sub(n_msg,consumer):
 
     cnt = 0
     for msg in consumer:
-        latency = time.time() - float(msg.value)
+        latency = time.time_ns() - float(msg.value)
         # print(latency , cnt)
         Append(latency)
         cnt+=1
         if cnt == n_msg:
             break
-    print("latency average:", sum(latency_list) / len(latency_list))
+    print("latency average: %d ns" % (sum(latency_list) / len(latency_list)))
 
 if __name__ == '__main__':
     args = argparser()
