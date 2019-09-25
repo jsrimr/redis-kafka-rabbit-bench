@@ -80,7 +80,7 @@ func TestRedisBenchWithWaitGroup(t *testing.T) {
 func TestRedisPubSubThroughputWithBufferedChannel(t *testing.T) {
 	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
-	nSec := 10
+	nSec := 1
 	cc := 100
 	cn := make(chan int, cc)
 	done := make(chan bool)
@@ -135,7 +135,7 @@ func TestRedisPubSubThroughputWithBufferedChannel(t *testing.T) {
 func TestRedisPubSubThroughputWithMutliConnection(t *testing.T) {
 	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
-	nSec := 10
+	nSec := 1
 	cc := 100
 	cn := make(chan int, cc)
 	done := make(chan bool)
@@ -188,7 +188,7 @@ func TestRedisPubSubThroughputWithMutliConnection(t *testing.T) {
 	log.Println("publish throughput", sum/nSec, "msg/sec")
 	<-done
 }
-func TestRedisPubSubLatemncyWithBufferedChannel(t *testing.T) {
+func TestRedisPubSubLatencyWithBufferedChannel(t *testing.T) {
 	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
 	nSec := 10
@@ -249,8 +249,8 @@ func TestRedisPubSubLatemncyWithBufferedChannel(t *testing.T) {
 func TestRedisSet(t *testing.T) {
 	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
-	nSec := 10
-	cc := 5
+	nSec := 1
+	cc := 100
 	cn := make(chan int, cc)
 
 	since := time.Now()
@@ -264,7 +264,7 @@ func TestRedisSet(t *testing.T) {
 				cn <- cnt
 			}()
 			for {
-				client.Set("k", "123456789012345678901234567989012", 0)
+				client.Set("k", "123", 0)
 				cnt++
 				nowSince := time.Since(since)
 				if nowSince > due {
