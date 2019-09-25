@@ -2,23 +2,23 @@ package main
 
 import (
 	"log"
-	"testing"
-	"time"
 	"strconv"
 	"sync"
+	"testing"
+	"time"
 
 	"github.com/go-redis/redis"
 )
 
 type counter struct {
-    i int
-    mu sync.Mutex
+	i  int
+	mu sync.Mutex
 }
 
 func (c *counter) increment() {
-    c.mu.Lock()
-    c.i ++
-    c.mu.Unlock()
+	c.mu.Lock()
+	c.i++
+	c.mu.Unlock()
 }
 
 func TestBuff(t *testing.T) {
@@ -28,9 +28,9 @@ func TestBuff(t *testing.T) {
 	cn <- 3
 	cn <- 4
 
-	sum:=0
-	for i:=0; i<4; i++ {
-		sum += <- cn
+	sum := 0
+	for i := 0; i < 4; i++ {
+		sum += <-cn
 	}
 	log.Println(sum)
 }
@@ -38,11 +38,11 @@ func TestBuff(t *testing.T) {
 func TestRedisBenchWithWaitGroup(t *testing.T) {
 	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
-	cnt := counter{i:0}
+	cnt := counter{i: 0}
 
 	nSec := 3
 	cc := 100
-	
+
 	since := time.Now()
 	log.Println("start")
 	wg := sync.WaitGroup{}
@@ -53,31 +53,31 @@ func TestRedisBenchWithWaitGroup(t *testing.T) {
 		for {
 			sub.ReceiveMessage()
 			due := time.Since(since)
-			if due > time.Second * time.Duration(nSec) {
+			if due > time.Second*time.Duration(nSec) {
 				break
 			}
 		}
 	}()
 
-	for i:=0; i<cc; i++ {
+	for i := 0; i < cc; i++ {
 		go func() {
 			defer wg.Done()
 			for {
 				client.Publish("channel", "123")
 				cnt.increment()
 				due := time.Since(since)
-				if due > time.Second * time.Duration(nSec) {
+				if due > time.Second*time.Duration(nSec) {
 					break
 				}
 			}
 		}()
 	}
 	wg.Wait()
-	log.Println("set throughput", cnt.i / nSec)
+	log.Println("set throughput", cnt.i/nSec)
 	sub.Close()
 }
 
-func TestRedisPubSubWithBufferedChannel(t *testing.T) {
+func TestRedisPubSubThroughputWithBufferedChannel(t *testing.T) {
 	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
 	nSec := 10
@@ -97,39 +97,97 @@ func TestRedisPubSubWithBufferedChannel(t *testing.T) {
 		log.Println("ready for subscribe")
 		for {
 			sub.ReceiveMessage()
-			cnt ++
+			cnt++
 			nowSince := time.Since(since)
-			if nowSince> due {
+			if nowSince > due {
 				break
 			}
 		}
-		log.Println("subscribe throughput", cnt / nSec, "msg/sec")
+		log.Println("subscribe throughput", cnt/nSec, "msg/sec")
 		done <- true
 	}(sub)
 	log.Println("ready for publish")
-	for i:=0; i<cc; i++ {
+	for i := 0; i < cc; i++ {
 		go func() {
-			cnt:=0
+			cnt := 0
 			defer func() {
-				cn<-cnt
+				cn <- cnt
 			}()
 			for {
-				client.Publish("channel", strconv.FormatInt(time.Now().UnixNano(),10))
+				client.Publish("channel", strconv.FormatInt(time.Now().UnixNano(), 10))
 				cnt++
 				nowSince := time.Since(since)
-				if nowSince> due {
+				if nowSince > due {
 					break
 				}
 			}
 		}()
 	}
-	sum:=0
-	for i:=0; i<cc; i++ {
+	sum := 0
+	for i := 0; i < cc; i++ {
 		sum += <-cn
 	}
 	close(cn)
-	log.Println("publish throughput", sum / nSec, "msg/sec")
-	<- done
+	log.Println("publish throughput", sum/nSec, "msg/sec")
+	<-done
+}
+
+func TestRedisPubSubLatemncyWithBufferedChannel(t *testing.T) {
+	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
+	defer client.Close()
+	nSec := 10
+	cc := 5
+	cn := make(chan int, cc)
+	done := make(chan bool)
+	sub := client.Subscribe("channel")
+
+	since := time.Now()
+	due := time.Second * time.Duration(nSec)
+	log.Println("start benchmark for redis")
+	go func(sub *redis.PubSub) {
+		defer func() {
+			sub.Close()
+		}()
+		cnt := 0
+		latency := 0
+		log.Println("ready for subscribe")
+		for {
+			msg, _ := sub.ReceiveMessage()
+			cnt++
+			nowSince := time.Since(since)
+			ns, _ := strconv.Atoi(msg.Payload)
+			latency += ns
+			if nowSince > due {
+				break
+			}
+		}
+		log.Println("subscribe throughput", latency/nSec, "ns")
+		done <- true
+	}(sub)
+	log.Println("ready for publish")
+	for i := 0; i < cc; i++ {
+		go func() {
+			cnt := 0
+			defer func() {
+				cn <- cnt
+			}()
+			for {
+				client.Publish("channel", strconv.FormatInt(time.Now().UnixNano(), 10))
+				cnt++
+				nowSince := time.Since(since)
+				if nowSince > due {
+					break
+				}
+			}
+		}()
+	}
+	sum := 0
+	for i := 0; i < cc; i++ {
+		sum += <-cn
+	}
+	close(cn)
+	log.Println("publish throughput", sum/nSec, "msg/sec")
+	<-done
 }
 
 func TestRedisSet(t *testing.T) {
@@ -143,26 +201,26 @@ func TestRedisSet(t *testing.T) {
 	due := time.Second * time.Duration(nSec)
 	log.Println("start benchmark for redis")
 	log.Println("ready for set")
-	for i:=0; i<cc; i++ {
+	for i := 0; i < cc; i++ {
 		go func() {
-			cnt:=0
+			cnt := 0
 			defer func() {
-				cn<-cnt
+				cn <- cnt
 			}()
 			for {
 				client.Set("k", "123456789012345678901234567989012", 0)
 				cnt++
 				nowSince := time.Since(since)
-				if nowSince> due {
+				if nowSince > due {
 					break
 				}
 			}
 		}()
 	}
-	sum:=0
-	for i:=0; i<cc; i++ {
+	sum := 0
+	for i := 0; i < cc; i++ {
 		sum += <-cn
 	}
 	close(cn)
-	log.Println("publish throughput", sum / nSec, "msg/sec")
+	log.Println("publish throughput", sum/nSec, "msg/sec")
 }
