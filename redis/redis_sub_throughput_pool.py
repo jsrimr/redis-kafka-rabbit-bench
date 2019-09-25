@@ -6,7 +6,7 @@ from arguments import argparser
 import time
 import redis
 import datetime
-from multiprocessing import Process
+from multiprocessing import Pool #, Process , QUEUE
 
 def pub(myredis,n_seconds):
     start = time.time_ns()
@@ -20,6 +20,7 @@ def pub(myredis,n_seconds):
     print(f"pub throughput {cnt / n_seconds} msgs")
 
 def sub(myredis, name,n_seconds):
+    print("sub started")
     pubsub = myredis.pubsub()
     pubsub.subscribe(['channel'])
 
@@ -28,7 +29,6 @@ def sub(myredis, name,n_seconds):
     n_ns = n_seconds * 1000000000
 
     for _ in pubsub.listen():
-        # print("sub started")
         cnt+=1
         if time.time_ns() > start + n_ns:
             break
@@ -38,14 +38,14 @@ def sub(myredis, name,n_seconds):
 if __name__ == '__main__':
     args = argparser()
     myredis = redis.StrictRedis()
+    res_list = []
+    with Pool() as p:
+        sub_res = p.apply_async(sub, myredis, 'reader1', args.n_seconds)
+        for _ in range(args.n_threads):
+            res_obj = p.apply_async(pub, myredis, args.n_seconds)
+            res_list.append(res_obj)
 
-    sub = Process(target=sub, kwargs={'myredis': myredis, 'name': 'reader1', 'n_seconds' :args.n_seconds})
-    sub.start()
-
-    pub = Process(target=pub , args=[myredis, args.n_seconds])
-    pub.start()
-
-    procs = [sub,pub]
-
-    for proc in procs:
-        proc.join()
+    pub_sum =0 
+    for obj in res_list:
+        pub_sum+=obj.get()
+    print(f"final sum : {pub_sum}")

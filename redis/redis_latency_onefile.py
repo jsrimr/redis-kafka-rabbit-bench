@@ -18,8 +18,9 @@ def sub(myredis, name, n_msg):
     pubsub = myredis.pubsub()
     pubsub.subscribe(['channel'])
 
-    latency_list = []
-    Append = latency_list.append
+    # latency_list = []
+    # Append = latency_list.append
+    latency_sum = 0
 
     cnt = 0
     for item in pubsub.listen():
@@ -28,12 +29,12 @@ def sub(myredis, name, n_msg):
             cnt+=1
             continue 
         latency = time.time() - float(item['data'])
-        Append(latency)
+        latency_sum += latency
         cnt += 1
         if cnt == n_msg:
             break
     print(
-        f'Latency Average for {n_msg}: {sum(latency_list) / len(latency_list)}')
+        f'Latency Average for {n_msg}: {latency_sum / cnt}')
 
 
 if __name__ == '__main__':
