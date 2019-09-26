@@ -342,9 +342,8 @@ func TestCloaPubSubLatencyWithBufferedChannel(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		defer conn.Close()
 		cnt := 0
-		latency := 0
+		sumLatency := 0
 		log.Println("ready for subscribe")
 		_, err = conn.Write([]byte("SUB 23482093 PP %d\r\n"))
 		if err != nil {
@@ -371,16 +370,17 @@ func TestCloaPubSubLatencyWithBufferedChannel(t *testing.T) {
 				}
 				cnt ++
 				nowSince := time.Since(since)
-				
+				now := int(time.Now().UnixNano())
 				ns, _ := strconv.Atoi(strings.Split(msg, " ")[3])
-				latency += int(time.Now().UnixNano())-ns
+				latency := now-ns
+				log.Println("latency", latency)
+				sumLatency += latency
 				if nowSince> due {
 					break READSUBS
 				}
 			}
 		}
-		// TODO : calculate cuncurrent latency
-		log.Println("subscribe throughput", latency / cnt, "ns", ":cnt", cnt)
+		log.Println("subscribe throughput", sumLatency / cnt, "ns", ":cnt", cnt)
 		done <- true
 	}()
 	log.Println("ready for publish")
