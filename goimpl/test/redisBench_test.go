@@ -267,9 +267,7 @@ func TestRedisPubSubLatencyWithBufferedChannel(t *testing.T) {
 	due := time.Second * time.Duration(nSec)
 	log.Println("start benchmark for redis")
 	go func(sub *redis.PubSub) {
-		defer func() {
-			sub.Close()
-		}()
+		defer sub.Close()
 		cnt := 0
 		latency := 0
 		log.Println("ready for subscribe")
