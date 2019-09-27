@@ -257,7 +257,7 @@ func TestRedisPubSubThroughputPipelined(t *testing.T) {
 func TestRedisPubSubThroughputMultiSubscribe(t *testing.T) {
 	nSec := 1
 	cc := 100
-	sc := 2
+	sc := 10
 	pc := 10
 	cn := make(chan int, cc)
 	done := make(chan bool)
@@ -334,8 +334,8 @@ func TestRedisPubSubThroughputMultiSubscribe(t *testing.T) {
 func TestRedisPubSubLatencyWithBufferedChannel(t *testing.T) {
 	client := redis.NewClient(&redis.Options{Addr: "localhost:6379", Password: "", DB: 0})
 	defer client.Close()
-	nSec := 10
-	cc := 2
+	nSec := 1
+	cc := 1
 	cn := make(chan int, cc)
 	done := make(chan bool)
 	sub := client.Subscribe("channel")
