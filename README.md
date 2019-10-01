@@ -1,6 +1,12 @@
 # Benchmark for various messaging services
 
 # Docker setup
+
+## install docker
+```
+sudo snap install docker
+```
+
 ## redis
 ```
 docker run --name benchredis -d redis:5.0.5-alpine
