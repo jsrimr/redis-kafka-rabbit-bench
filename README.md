@@ -6,6 +6,15 @@
 ```
 sudo snap install docker
 ```
+ - sudo 명령없이 docker 명령어 실행하기 
+ ```
+ sudo usermod -aG docker $USER
+ sudo addgroup --system docker
+ sudo adduser $USER docker
+ newgrp docker
+ sudo snap disable docker
+ sudo snap enable docker
+ ```
 
 ## redis
 ```
