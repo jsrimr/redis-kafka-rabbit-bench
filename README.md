@@ -18,7 +18,7 @@ sudo snap install docker
 
 ## redis
 ```
-docker run --name benchredis -d redis:5.0.5-alpine -p 6379:6379
+docker run --name benchredis -d -p 6379:6379 redis:5.0.5-alpine 
 ```
 
 ## rabbitmq
