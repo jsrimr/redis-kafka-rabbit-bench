@@ -1,4 +1,4 @@
-certifi==2019.6.16
+certifi==2022.12.7
 kafka-python==1.4.6
 pika==1.1.0
 redis==3.3.8
